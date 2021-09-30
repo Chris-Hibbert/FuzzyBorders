@@ -40,23 +40,37 @@ grid.update(
   }
 );
 
-const updateOwner = (grid, hex, owner) =>{
+const claimHex = (grid, hex, owner, turn) =>{
   grid.update(mutating => {
     let mutableHex = mutating.getHex(hex);
-    mutableHex.owner = owner;
+    mutableHex.owner = { claimed: owner, turn};
     mutating.store.set(hex, mutableHex);
   });
 };
 
+let turn = 1;
 const gridNew = buildGrid(10, hexPrototype);
-updateOwner(gridNew,[6,9], 'CH');
-updateOwner(gridNew,qrFromLettDig('d',13), 'CH');
-updateOwner(gridNew,qrFromLettDig('k',4), 'TH');
-updateOwner(gridNew,qrFromLettDig('o',10), 'TH');
-influence(gridNew, qrFromLettDig('j',10), 20, 1)
+// updateOwner(gridNew,[6,9], 'CH');
+// updateOwner(gridNew,qrFromLettDig('d',13), 'CH');
+// updateOwner(gridNew,qrFromLettDig('k',4), 'TH');
+// updateOwner(gridNew,qrFromLettDig('o',10), 'TH');
+
+
+//   Rules diagrams
+claimHex(gridNew,qrFromLettDig('i',9), 'AL', turn);
+claimHex(gridNew,qrFromLettDig('j',13), 'AT', turn);
+influence(gridNew, qrFromLettDig('j',10), 20, turn)
+console.log(`    set T1 owners`)
+turn += 1;
+
+claimHex(gridNew,qrFromLettDig('k',10), 'AL', turn);
+claimHex(gridNew,qrFromLettDig('o',6), 'AT', turn);
+influence(gridNew, qrFromLettDig('j',10), 20, turn)
+console.log(`    set T2 owners`)
+
 
 gridNew.each(hex => {
-  hex.svg = render(hex)
+  hex.svg = render(hex, turn)
 }).run();
 console.log(gridNew.store)
 

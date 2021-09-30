@@ -17,14 +17,25 @@ const lettDigFromQR = (q, r)  => {
 
 const draw = SVG().addTo('body').size('100%', '100%')
 
-function cellDescription(hex: Hex) {
+function cellDescription(hex: Hex, turn) {
   if (hex.owner) {
-    return `${hex.owner}`
+    if (hex.owner.claimed) {
+      return `${hex.owner.claimed}`
+    } else if (hex.owner.owned) {
+      return `${hex.owner.owned}5`
+    }
+    console.log(`cDesc   Why here?  ${hex.owner}`);
   } else if (hex.influence) {
-    let most = mostInfluence(hex, 1);
+    let most = mostInfluence(hex, turn);
     if (most[0] === '**') {
       return `${most[0]}`;
     }
+    if (!most[0]) {
+      // console.log(`D  ${hex}  ${most[0]}  ${most[1]}`)
+      let ld = lettDigFromQR(hex.q, hex.r);
+      return `${ld[0]} ${ld[1]}`;
+    }
+
     return `${most[0]}${most[1]}`;
   } else {
     let ld = lettDigFromQR(hex.q, hex.r);
@@ -32,11 +43,15 @@ function cellDescription(hex: Hex) {
   }
 }
 
-function weight(hex) {
+function weight(hex, turn) {
   if (hex.owner) {
-    return .5;
+    if (hex.owner.claimed) {
+      return .5;
+    } else {
+     return .40;
+    }
   } else if (hex.influence) {
-    let most = mostInfluence(hex, 1);
+    let most = mostInfluence(hex, turn);
     return Math.min(.45,
      Math.max(.3, ((most[1] * .02) + .28)));
   } else {
@@ -44,7 +59,7 @@ function weight(hex) {
   }
 }
 
-export const render = (hex: Hex) => {
+export const render = (hex: Hex, turn) => {
   const OFFSET_X = 200;
   const OFFSET_Y = 20;
   const polygon = draw
@@ -53,9 +68,9 @@ export const render = (hex: Hex) => {
     .stroke({ width: 1, color: '#999' });
 
   const text = draw
-    .text(cellDescription(hex))
+    .text(cellDescription(hex, turn))
     .font({
-      size: hex.width * weight(hex),
+      size: hex.width * weight(hex, turn),
       anchor: 'middle',
       'dominant-baseline': 'central',
       leading: 0,

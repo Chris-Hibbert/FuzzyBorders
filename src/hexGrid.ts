@@ -53,16 +53,19 @@ function setInfluenceList(hex, turn, newInfluence) {
   // console.log(`pushed  `, hex.influence[turn]);
 }
 
+// mostInfluence is returning a variety of info. Return it in a format that's
+// actionable by both cellDesc() and weight()
+
+
 function mostInfluence(hex, turn) {
   let max = 0;
   let influencers = [];
 
   const list = influenceList(hex, turn);
-  // console.log(`INF   ${Object.getOwnPropertyNames(list)}`);
 
   if (list) {
-     Object.getOwnPropertyNames(list).forEach((name) => {
-     // console.log(`${name}  ${list[name]}`);
+     Object.getOwnPropertyNames(list).forEach(name => {
+     // console.log(`${hex}:   ${name}  ${list[name]}  T${turn}`);
        const power = list[name];
         if (power > max) {
           max = power;
@@ -72,12 +75,35 @@ function mostInfluence(hex, turn) {
         }
       }, {});
   }
+
+  // influencers is now a list of influence wts.
+  // influencers[max] is a list of names in the highest category
+
+  // pay attention to previous ownership
+
+  // if () {
+  //   return { owner: '' };
+  // } else if () {
+  //   return { unowned: max };
+  // } else
+  // const score =
   // console.log(`MOST  ${influencers}, ${max}`);
-  if (influencers.length > 1) {
-    // console.log(`hex ${hex} size ${influencers.length}`, influencers);
+
+  if (influencers.length === 0) {
+   return [];
+  } else if (influencers.length === 1) {
+    // console.log(` 1  ${influencers}   Level = ${max}`);
+    if (max >= 5) {
+      hex.owner = { owned: influencers[0], turn };
+      return [influencers[0], 5];
+    }
+    return [influencers[0], max];
+  } else if (influencers.length > 1) {
+    // console.log(`  ${hex}  >1  ${influencers}`);
     return ['**', max];
   }
 
+console.log(`MI  ret ${influencers}, ${max}`)
   return [influencers[0], max];
 }
 
@@ -85,21 +111,26 @@ function influence(grid, c, size, turn) {
 
   function spreadInfluence(mut) {
     return ownedHex => {
+      if (!ownedHex.owner) {
+        return;
+      }
+      const {claimed, turn: claimedTurn} = ownedHex.owner;
+      // TODO: does claimed turn matter, or are we always looking at the latest data
+
       function addInfluence(m) {
         return influencedHex => {
           const list = influenceList(influencedHex, turn) || {};
-          let playerInfluence = list[player] || 0;
+          let playerInfluence = list[claimed] || 0;
 
           playerInfluence += 5 - grid.distance(influencedHex, ownedHex);
-          list[player] = playerInfluence;
+          list[claimed] = playerInfluence;
           setInfluenceList(influencedHex, turn, list);
           mut.store.set(`${influencedHex.q},${influencedHex.r}`, influencedHex);
         }
       }
 
-      const player = ownedHex.owner;
-      if (player) {
-        console.log(`${ownedHex} owned by ${player}`);
+      if (claimed) {
+        console.log(`${ownedHex} claimed by ${claimed}`);
         traverseSpiral(grid, ownedHex, 4, addInfluence);
       }
     }
