@@ -37,6 +37,33 @@ function buildGrid(size, hexProto) {
   return traverseSpiral(tempGrid, GRID_CENTER, size * 5, removeFarHexes);
 }
 
+function reportScores(grid, c, size, turn) {
+  const scores = new Map;
+  function addTo(name, points) {
+    const oldValue = scores.get(name) || 0;
+    scores.set(name, oldValue + points);
+  }
+
+  function collectScore(mut) {
+    return hex => {
+      if (hex.owner && hex.owner.claimed) {
+        addTo(hex.owner.claimed, 10);
+      } else if (hex.owner && hex.owner.owned) {
+        addTo(hex.owner.owned, 5);
+      } else if (hex.influence) {
+        let most = mostInfluence(hex, turn);
+        if (most[0] === '**' || !most[0]) {
+          return;
+        }
+        addTo(most[0], most[1]);
+        return;
+      }
+    }
+  }
+  traverseSpiral(grid, c, size, collectScore);
+  return scores;
+}
+
 function influenceList(hex, turn) {
   return hex.influence && hex.influence[turn];
 }
@@ -52,10 +79,6 @@ function setInfluenceList(hex, turn, newInfluence) {
 
   // console.log(`pushed  `, hex.influence[turn]);
 }
-
-// mostInfluence is returning a variety of info. Return it in a format that's
-// actionable by both cellDesc() and weight()
-
 
 function mostInfluence(hex, turn) {
   let max = 0;
@@ -81,14 +104,6 @@ function mostInfluence(hex, turn) {
 
   // pay attention to previous ownership
 
-  // if () {
-  //   return { owner: '' };
-  // } else if () {
-  //   return { unowned: max };
-  // } else
-  // const score =
-  // console.log(`MOST  ${influencers}, ${max}`);
-
   if (influencers.length === 0) {
    return [];
   } else if (influencers.length === 1) {
@@ -108,7 +123,6 @@ console.log(`MI  ret ${influencers}, ${max}`)
 }
 
 function influence(grid, c, size, turn) {
-
   function spreadInfluence(mut) {
     return ownedHex => {
       if (!ownedHex.owner) {
@@ -135,9 +149,9 @@ function influence(grid, c, size, turn) {
       }
     }
   }
-console.log(`OWNERSHIP  ${c}, ${size}`)
+  console.log(`OWNERSHIP  ${c}, ${size}`)
 
   traverseSpiral(grid, c, size, spreadInfluence);
 }
 
-export { buildGrid, qrFromLettDig, qrFromDigDig, lettDigFromQR, influence, mostInfluence };
+export { buildGrid, qrFromLettDig, qrFromDigDig, lettDigFromQR, influence, mostInfluence, reportScores };
