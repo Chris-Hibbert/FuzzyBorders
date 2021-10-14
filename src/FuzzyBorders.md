@@ -15,6 +15,7 @@ claimed cell. Claimed cells are worth 10. Suppose there's only one player, Ada,
 and she claims cell I9, then the board looks as follows:
 
 ![Ada Alone](./AL.png)
+<center>(Ada has 130 points)</center>
 
 (3) If two or more players have influence over the same cell, then the cell is
 considered to be under the influence of the player with the highest total
@@ -24,6 +25,7 @@ Alan (AT) as a player in this first turn, and he claims cell J10, then the board
 would look like this:
 
 ![Ada and Alan](./AL+AT2.png)
+<center>(Both players have 114 points)</center>
 
 
 (4) Influence created in subsequent turns is added to influence the player
@@ -37,6 +39,7 @@ Suppose that in the second turn Ada claims cell K10 while Alan
 claims cell O6, then the board would look like this:
 
 ![Ada and Alan two turns](./AL+AT-T2.png)
+<center>(Ada has 183 points, Alan has 189)</center>
 
 (5) You cannot claim a cell under another player's influence, but you **can**
 claim uninfluenced cells, or cells under your own influence.
